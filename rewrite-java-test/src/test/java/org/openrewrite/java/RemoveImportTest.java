@@ -331,6 +331,66 @@ class RemoveImportTest implements RewriteTest {
         );
     }
 
+    @Test
+    void preservesCommentAfterRemovedImport() {
+        rewriteRun(
+          spec -> spec.recipe(removeImport("java.util.List")),
+          java(
+            """
+              package com.example.foo;
+                            
+              import java.util.Collection;
+              import java.util.List;
+              // import java.util.UUID
+              import java.util.ArrayList;
+                            
+              public class A {
+              }
+              """,
+            """
+              package com.example.foo;
+                            
+              import java.util.Collection;
+              // import java.util.UUID
+              import java.util.ArrayList;
+                            
+              public class A {
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void preservesWhitespaceAfterRemovedStaticImport() {
+        rewriteRun(
+          spec -> spec.recipe(removeImport("java.util.Collections.singletonList")),
+          java(
+            """
+              package com.example.foo;
+
+              import static java.util.Collections.emptySet;
+              import static java.util.Collections.singletonList;
+                            
+              import java.util.UUID;
+                            
+              public class A {
+              }
+              """,
+            """
+              package com.example.foo;
+                            
+              import static java.util.Collections.emptySet;
+
+              import java.util.UUID;
+                            
+              public class A {
+              }
+              """
+          )
+        );
+    }
+
     @Issue("https://github.com/openrewrite/rewrite/issues/701")
     @Test
     void preservesWhitespaceAfterPackageDeclarationNoImportsRemain() {
